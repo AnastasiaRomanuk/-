@@ -1,0 +1,87 @@
+-- postgresql
+
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- потерянные изменения
+T1
+
+\c kursovaya_bd
+BEGIN TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+update "Musikalnaya_gruppa" set "God_obrazovaniya" = 2000
+where "Nazvanie_gruppi" = 'tatu';
+
+
+T2
+
+\c kursovaya_bd
+BEGIN TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+update "Musikalnaya_gruppa" set "God_obrazovaniya" = 1920
+where "Nazvanie_gruppi" = 'tatu';
+commit;
+
+T1 
+
+commit;
+select * from "Musikalnaya_gruppa";
+
+-- грязное чтение
+
+T1
+\c kursovaya_bd
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+select * from "Musikalnaya_gruppa" where "Nazvanie_gruppi" = 'tatu';
+
+T2
+
+\c kursovaya_bd
+BEGIN TRANSACTION ISOLATION LEVEL READ COMMITTED;
+update "Musikalnaya_gruppa" set "God_obrazovaniya" = 1999
+where "Nazvanie_gruppi" = 'tatu';
+
+
+T1
+select * from "Musikalnaya_gruppa" where "Nazvanie_gruppi" = 'tatu';
+
+T2
+rollback;
+
+T1
+select * from "Musikalnaya_gruppa" where "Nazvanie_gruppi" = 'tatu';
+
+
+-- неповторяющиеся чтения
+
+T1
+
+\c kursovaya_bd
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+select * from "Musikalnaya_gruppa" where "Nazvanie_gruppi" = 'tatu';
+
+T2
+\c kursovaya_bd
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+update "Musikalnaya_gruppa" set "God_obrazovaniya" = 2000
+where "Nazvanie_gruppi" = 'tatu';
+commit;
+
+T1
+select * from "Musikalnaya_gruppa" where "Nazvanie_gruppi" = 'tatu';
+commit;
+
+
+-- фантомы
+
+T1
+\c kursovaya_bd
+BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+select * from "Musikalnaya_gruppa" where "God_obrazovaniya" > 2010;
+
+T2
+\c kursovaya_bd
+BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+update "Musikalnaya_gruppa" set "God_obrazovaniya" = 2018 where "Nazvanie_gruppi" = 'tatu';
+commit;
+
+T1
+select * from "Musikalnaya_gruppa" where "God_obrazovaniya" > 2010;
+commit;

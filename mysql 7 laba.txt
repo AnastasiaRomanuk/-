@@ -1,0 +1,162 @@
+START TRANSACTION;
+insert
+rollback;
+// commit
+// use kursovaya_bd;
+
+select * from musikalnaya_gruppa;
+///////////
+START TRANSACTION;
+update zena set Zena_bileta = 123456
+where Mesto_vistupleniya = 'CA';
+commit;
+///////////
+START TRANSACTION;
+update musikalnaya_gruppa set God_obrazovaniya = 1940
+where Nazvanie_gruppi = 'blaky';
+rollback;
+
+START TRANSACTION;
+
+T1
+use kursovaya_bd
+SET GLOBAL TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+start transaction;
+update zena set Zena_bileta = 1111111
+where Mesto_vistupleniya = 'CA';
+commit;
+
+T2
+use kursovaya_bd
+SET GLOBAL TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+start transaction;
+update zena set Zena_bileta = 2222222
+where Mesto_vistupleniya = 'CA';
+commit;
+
+select * from zena;
+
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+
+
+
+SELECT @@tx_isolation;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Insert into zena values(12000,2,"Newnan");
+Insert into zena values(10000,2,"Eldorado");
+
+Insert into zena values(10000,2,"Atlanta");
+
+
+SHOW GRANTS FOR wanuser@localhost;
+
+Insert into zena values(18000,2,"CA");
+
+connect kursovaya_bd 'localhost'@'oneuser' -p 'root';
+
+connect kursovaya_bd 'localhost'@'twouser' -p 'root';
+
+GRANT SELECT ON kursovaya_bd.* TO 'oneuser'@'localhost';
+GRANT SELECT,UPDATE,DELETE ON kursovaya_bd.* TO 'twouser'@'localhost';
+
+mysql -h localhost -u twuser -p
+
+REVOKE UPDATE ON kursovaya_bd.* FROM 'twuser'@'localhost';
+
+
+
+
+
+-- гр€зное чтение
+
+T1
+use kursovaya_bd
+SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;
+start transaction;
+select * from zena where Mesto_vistupleniya = 'CA';
+
+T2
+use kursovaya_bd
+SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;
+start transaction;
+update zena set Zena_bileta = 33333333 where Mesto_vistupleniya = 'CA';
+commit;
+
+T1
+select * from zena where Mesto_vistupleniya = 'CA';
+commit;
+
+
+
+
+-- неповтор€ющиес€ чтени€
+
+T1
+use kursovaya_bd
+SET GLOBAL TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+start transaction;
+select * from zena where Mesto_vistupleniya = 'CA';
+
+T2
+use kursovaya_bd
+SET GLOBAL TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+start transaction;
+update zena set Zena_bileta = 17171717 where Mesto_vistupleniya = 'CA';
+commit;
+
+T1
+select * from zena where Mesto_vistupleniya = 'CA';
+commit;
+
+
+
+-- ‘антомы
+
+T1
+use kursovaya_bd
+SET GLOBAL TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+update zena set Zena_bileta = 11111 where Mesto_vistupleniya = 'CA';
+
+T2
+use kursovaya_bd
+SET GLOBAL TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+update zena set Zena_bileta = 22222 where Mesto_vistupleniya = 'Eldorado';
+
+T1
+update zena set Zena_bileta = 33333 where Mesto_vistupleniya = 'Eldorado';
+
+T2
+update zena set Zena_bileta = 44444 where Mesto_vistupleniya = 'CA';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
